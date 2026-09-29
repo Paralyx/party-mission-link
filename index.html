@@ -6,16 +6,17 @@
 <script>
 const statusEl=document.getElementById('status'),enter=document.getElementById('enter'),retry=document.getElementById('retry');
 let savedGuest='';
+let memorySaved=false;
 const incoming=new URLSearchParams(location.hash.slice(1)),remember=incoming.get('remember');
 const validToken=token=>typeof token==='string'&&token.length<512&&/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
 try{
-  if(validToken(remember)){localStorage.setItem('party-guest-v1',remember);savedGuest=remember;}
+  if(validToken(remember)){localStorage.setItem('party-guest-v1',remember);savedGuest=remember;memorySaved=localStorage.getItem('party-guest-v1')===remember;}
   else {const stored=localStorage.getItem('party-guest-v1');if(validToken(stored))savedGuest=stored;}
 }catch{statusEl.textContent='Dein Browser erlaubt kein dauerhaftes Merken. Die Party funktioniert trotzdem.';}
 history.replaceState(null,'',location.pathname+location.search);
 function targetLink(origin){return origin+(savedGuest?'#party-resume='+savedGuest:'');}
 if(validToken(remember)){
-  try{const origin=new URL(incoming.get('origin'));if(origin.protocol==='https:'&&/^[a-z0-9-]+\.trycloudflare\.com$/.test(origin.hostname)&&!origin.username&&!origin.password&&!origin.port&&origin.pathname==='/'&&!origin.search&&!origin.hash)location.replace(origin.origin);}catch{}
+  try{const origin=new URL(incoming.get('origin'));if(origin.protocol==='https:'&&/^[a-z0-9-]+\.trycloudflare\.com$/.test(origin.hostname)&&!origin.username&&!origin.password&&!origin.port&&origin.pathname==='/'&&!origin.search&&!origin.hash)location.replace(origin.origin+'#party-memory='+(memorySaved?'saved':'unavailable'));}catch{}
 }
 async function load(fresh=false){retry.hidden=true;enter.hidden=true;statusEl.textContent='Party-Adresse wird geladen …';try{
 const source=fresh?"https://api.github.com/repos/Paralyx/party-mission-link/contents/target.json?ref=live&":"https://raw.githubusercontent.com/Paralyx/party-mission-link/live/target.json"+'?';
